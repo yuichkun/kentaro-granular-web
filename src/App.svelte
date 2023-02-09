@@ -76,11 +76,18 @@
 
   function onKeyDown(e: KeyboardEvent) {
     if (!isStarted) return;
+    if (e.key === "l") {
+      fileInput.click();
+    }
     if (e.key === "r") {
       recordSound();
     }
     if (e.code === "Space" && !isRecording) {
-      audioEl.play();
+      if (audioEl.paused) {
+        audioEl.play();
+      } else {
+        audioEl.pause();
+      }
     }
   }
 </script>
@@ -150,7 +157,7 @@
     />
     <div class="controls">
       <button id="load-button" on:click={() => fileInput.click()}
-        >LOAD SAMPLE AUDIO</button
+        >LOAD YOUR SAMPLE (L)</button
       >
       <button
         id="record-button"
