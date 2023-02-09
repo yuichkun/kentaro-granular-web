@@ -20,6 +20,6 @@
   },
   "dependencies": {
     "@neodrag/svelte": "2.0.3",
-    "@rnbo/js": "1.0.2"
+    "@rnbo/js": "1.0.1"
   }
 }
