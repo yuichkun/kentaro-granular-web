@@ -1,8 +1,9 @@
 <script lang="ts">
   import { draggable } from "@neodrag/svelte";
   import { createDevice, type Device } from "@rnbo/js";
-  let x: number = 250;
-  let y: number = 250;
+  let x: number = 50;
+  let y: number = 50;
+  let fileName: string = "Plaits_20200805_10.wav";
   function normalizePos({ x, y }: { x: number; y: number }) {
     return {
       x: (x + 1) / 468,
@@ -29,13 +30,27 @@
       device = _device;
     }
   };
+  let fileInput: HTMLInputElement;
+  const changeBuffer = async (arrayBuf: ArrayBuffer, _fileName: string) => {
+    if (!device) return;
+    // Decode the received Data as an AudioBuffer
+    const audioBuf = await context.decodeAudioData(arrayBuf);
+    // Set the DataBuffer on the device
+    await device.setDataBuffer("buf_sample", audioBuf);
+    fileName = _fileName;
+  };
+
+  function formatNumber(n: number) {
+    return (n * 100).toFixed(1);
+  }
 </script>
 
 <main>
   {#if isStarted}
     <pre>
-    Position(x): {x}
-    Pitch(y): {y}
+    File: {fileName}
+    Position(x): {formatNumber(x)}%
+    Pitch(y): {formatNumber(y)}%
     </pre>
     <div id="parent">
       <div
@@ -73,6 +88,29 @@
         }}
       />
     </div>
+    <input
+      type="file"
+      accept="audio/*"
+      style="display:none"
+      bind:this={fileInput}
+      on:change={() => {
+        if (!(fileInput.files && fileInput.files.length === 1))
+          throw new Error("please select one audio file");
+        const reader = new FileReader();
+        const fileName = fileInput.files[0].name;
+        reader.onload = (e) => {
+          if (!e.target) throw new Error("something unexpected happened");
+          if (!(e.target.result instanceof ArrayBuffer))
+            throw new Error("failed to decode the file");
+          if (!fileInput.files) return;
+          changeBuffer(e.target.result, fileName);
+        };
+        reader.readAsArrayBuffer(fileInput.files[0]);
+      }}
+    />
+    <button id="load-button" on:click={() => fileInput.click()}
+      >LOAD SAMPLE AUDIO</button
+    >
   {:else}
     <button on:click={onClick}>PLAY</button>
   {/if}
@@ -92,5 +130,8 @@
     border-radius: 50%;
     cursor: pointer;
     filter: blur(2px) brightness(200%);
+  }
+  #load-button {
+    margin-top: 18px;
   }
 </style>
