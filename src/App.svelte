@@ -73,6 +73,16 @@
       isRecording = false;
     }
   };
+
+  function onKeyDown(e: KeyboardEvent) {
+    if (!isStarted) return;
+    if (e.key === "r") {
+      recordSound();
+    }
+    if (e.code === "Space" && !isRecording) {
+      audioEl.play();
+    }
+  }
 </script>
 
 <main>
@@ -146,7 +156,7 @@
         id="record-button"
         on:click={recordSound}
         class={isRecording ? "red" : ""}
-        >{isRecording ? "STOP RECORDING" : "RECORD AUDIO"}</button
+        >{isRecording ? "STOP RECORDING (R)" : "RECORD AUDIO (R)"}</button
       >
       <audio bind:this={audioEl} controls hidden={isAudioHidden} />
     </div>
@@ -154,6 +164,7 @@
     <button on:click={onClick}>PLAY</button>
   {/if}
 </main>
+<svelte:window on:keydown={onKeyDown} />
 
 <style>
   .red {
