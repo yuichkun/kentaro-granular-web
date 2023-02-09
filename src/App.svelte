@@ -103,6 +103,7 @@
 </script>
 
 <main>
+  <h1>Kentaro Granular Web</h1>
   {#if isStarted}
     <pre>
     File: {fileName}
@@ -178,7 +179,7 @@
       <audio bind:this={audioEl} controls hidden={isAudioHidden} />
     </div>
   {:else}
-    <button on:click={onClick}>PLAY</button>
+    <button style="margin-top:32px;" on:click={onClick}>PLAY</button>
   {/if}
 </main>
 <svelte:window on:keydown={onKeyDown} />
