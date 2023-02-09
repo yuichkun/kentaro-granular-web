@@ -1,5 +1,6 @@
 <script lang="ts">
   import { draggable } from "@neodrag/svelte";
+  import { createDevice } from "@rnbo/js";
   let x: number = 250;
   let y: number = 250;
   function normalizePos({ x, y }: { x: number; y: number }) {
@@ -15,9 +16,44 @@
     normalizedX = normalizedPos.x;
     normalizedY = normalizedPos.y;
   }
+
+  let WAContext = window.AudioContext || (window as any).webkitAudioContext;
+  let context = new WAContext();
+  const onClick = async () => {
+    await context.resume();
+    let rawPatcher = await fetch("patch.export.json");
+    let patcher = await rawPatcher.json();
+    const device = await createDevice({ context, patcher });
+    device.node.connect(context.destination);
+
+    const dependencies = await (await fetch("dependencies.json")).json();
+
+    const results = await device.loadDataBufferDependencies(dependencies);
+    results.forEach((result) => {
+      if (result.type === "success") {
+        console.log(`Successfully loaded buffer with id ${result.id}`, result);
+      } else {
+        console.log(
+          `Failed to load buffer with id ${result.id}, ${result.error}`
+        );
+      }
+    });
+    const pos = device.parametersById.get("pos");
+    pos.value = 0.4573;
+    console.log(device.parametersById.get("pos"));
+
+    const pitch = device.parametersById.get("pitch");
+    pitch.value = 0.7065;
+    console.log(device.parametersById.get("pitch"));
+
+    const play = device.parametersById.get("play");
+    play.value = 1;
+    console.log(device.parametersById.get("play"));
+  };
 </script>
 
 <main>
+  <button on:click={onClick}>button</button>
   <pre>
     x: {normalizedX}
     y: {normalizedY}
