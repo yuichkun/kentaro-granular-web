@@ -6,7 +6,7 @@
   function normalizePos({ x, y }: { x: number; y: number }) {
     return {
       x: (x + 1) / 468,
-      y: (y + 1) / 468,
+      y: 1 - (y + 1) / 468,
     };
   }
   let WAContext = window.AudioContext || (window as any).webkitAudioContext;
@@ -34,8 +34,8 @@
 <main>
   {#if isStarted}
     <pre>
-    x: {x}
-    y: {y}
+    Position(x): {x}
+    Pitch(y): {y}
     </pre>
     <div id="parent">
       <div
