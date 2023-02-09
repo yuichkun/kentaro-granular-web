@@ -1,0 +1,10 @@
+[
+  {
+    "id": "buf_sample",
+    "file": "Plaits_20200805_10.wav"
+  },
+  {
+    "id": "buf_win",
+    "file": "sinwindowExp055_48000.wav"
+  }
+]
