@@ -74,7 +74,7 @@
       />
     </div>
   {:else}
-    <button on:click={onClick}>button</button>
+    <button on:click={onClick}>PLAY</button>
   {/if}
 </main>
 
