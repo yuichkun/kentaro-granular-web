@@ -13,6 +13,8 @@
   let WAContext = window.AudioContext || (window as any).webkitAudioContext;
   let context = new WAContext();
   let device: Device | null = null;
+  let mediaRecorder: MediaRecorder;
+  let audioEl: HTMLAudioElement;
   $: isStarted = device !== null;
 
   const onClick = async () => {
@@ -28,6 +30,20 @@
     const isSuccess = results.every((result) => result.type === "success");
     if (isSuccess) {
       device = _device;
+
+      const dest = context.createMediaStreamDestination();
+      device.node.connect(dest);
+
+      let chunks: BlobPart[] = [];
+      mediaRecorder = new MediaRecorder(dest.stream);
+      mediaRecorder.ondataavailable = (evt) => {
+        chunks.push(evt.data);
+      };
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
+        audioEl.src = URL.createObjectURL(blob);
+        chunks = [];
+      };
     }
   };
   let fileInput: HTMLInputElement;
@@ -43,6 +59,20 @@
   function formatNumber(n: number) {
     return (n * 100).toFixed(1);
   }
+
+  let isAudioHidden = true;
+  let isRecording = false;
+  const recordSound = () => {
+    if (!isRecording) {
+      mediaRecorder.start();
+      isAudioHidden = true;
+      isRecording = true;
+    } else {
+      mediaRecorder.stop();
+      isAudioHidden = false;
+      isRecording = false;
+    }
+  };
 </script>
 
 <main>
@@ -108,15 +138,27 @@
         reader.readAsArrayBuffer(fileInput.files[0]);
       }}
     />
-    <button id="load-button" on:click={() => fileInput.click()}
-      >LOAD SAMPLE AUDIO</button
-    >
+    <div class="controls">
+      <button id="load-button" on:click={() => fileInput.click()}
+        >LOAD SAMPLE AUDIO</button
+      >
+      <button
+        id="record-button"
+        on:click={recordSound}
+        class={isRecording ? "red" : ""}
+        >{isRecording ? "STOP RECORDING" : "RECORD AUDIO"}</button
+      >
+      <audio bind:this={audioEl} controls hidden={isAudioHidden} />
+    </div>
   {:else}
     <button on:click={onClick}>PLAY</button>
   {/if}
 </main>
 
 <style>
+  .red {
+    background: #cb0000;
+  }
   #parent {
     width: 500px;
     height: 500px;
@@ -131,7 +173,11 @@
     cursor: pointer;
     filter: blur(2px) brightness(200%);
   }
-  #load-button {
+
+  .controls {
     margin-top: 18px;
+    display: grid;
+    place-content: center;
+    gap: 12px;
   }
 </style>
