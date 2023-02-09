@@ -1,6 +1,16 @@
 <script lang="ts">
+  import {
+    MediaRecorder,
+    register,
+    type IMediaRecorder,
+  } from "extendable-media-recorder";
+  import { connect } from "extendable-media-recorder-wav-encoder";
   import { draggable } from "@neodrag/svelte";
   import { createDevice, type Device } from "@rnbo/js";
+  import { onMount } from "svelte";
+  onMount(async () => {
+    await register(await connect());
+  });
   let x: number = 50;
   let y: number = 50;
   let fileName: string = "Plaits_20200805_10.wav";
@@ -13,7 +23,7 @@
   let WAContext = window.AudioContext || (window as any).webkitAudioContext;
   let context = new WAContext();
   let device: Device | null = null;
-  let mediaRecorder: MediaRecorder;
+  let mediaRecorder: IMediaRecorder;
   let audioEl: HTMLAudioElement;
   $: isStarted = device !== null;
 
@@ -35,12 +45,12 @@
       device.node.connect(dest);
 
       let chunks: BlobPart[] = [];
-      mediaRecorder = new MediaRecorder(dest.stream);
-      mediaRecorder.ondataavailable = (evt) => {
+      mediaRecorder = new MediaRecorder(dest.stream, { mimeType: "audio/wav" });
+      mediaRecorder.ondataavailable = (evt: any) => {
         chunks.push(evt.data);
       };
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
+        const blob = new Blob(chunks, { type: "audio/wav" });
         audioEl.src = URL.createObjectURL(blob);
         chunks = [];
       };
