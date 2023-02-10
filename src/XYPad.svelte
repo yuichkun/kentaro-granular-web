@@ -99,12 +99,13 @@
     width: 500px;
     height: 500px;
     border: 1px white solid;
+    margin: 0 auto;
   }
   #description {
     position: absolute;
     left: 50%;
     top: 50%;
-    transform: translate(-50%, 127%);
+    /* transform: translate(-50%, 127%); */
   }
   #pointer {
     width: 30px;
