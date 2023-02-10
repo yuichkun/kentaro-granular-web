@@ -7,6 +7,8 @@
   import type { RnboModule } from "./rnbo";
   import SampleLoadButton from "./SampleLoadButton.svelte";
   import type { ChangeBufferEventPayload } from "./types";
+  import RecordButton from "./RecordButton.svelte";
+  import { isAudioHidden, isRecording } from "./stores";
 
   export let rnboModule: RnboModule;
   export let context: AudioContext;
@@ -24,8 +26,6 @@
   let fileName: string = "Plaits_20200805_10.wav";
   let x: number = 50;
   let y: number = 50;
-  let isAudioHidden = true;
-  let isRecording = false;
 
   onMount(async () => {
     const onStop = (blob: Blob) => {
@@ -33,18 +33,6 @@
     };
     mediaRecorder = await setupMediaRecorder({ context, device, onStop });
   });
-
-  const recordSound = () => {
-    if (!isRecording) {
-      mediaRecorder.start();
-      isAudioHidden = true;
-      isRecording = true;
-    } else {
-      mediaRecorder.stop();
-      isAudioHidden = false;
-      isRecording = false;
-    }
-  };
 
   const onChangeBuffer = ({
     detail: { arrayBuffer, fileName },
@@ -72,10 +60,7 @@
   };
 
   function onKeyDown(e: KeyboardEvent) {
-    if (e.key === "r") {
-      recordSound();
-    }
-    if (e.code === "Space" && !isRecording) {
+    if (e.code === "Space" && !$isRecording) {
       if (audioEl.paused) {
         audioEl.play();
       } else {
@@ -107,20 +92,12 @@
 </div>
 <div class="controls">
   <SampleLoadButton on:changeBuffer={onChangeBuffer} />
-  <button
-    id="record-button"
-    on:click={recordSound}
-    class={isRecording ? "red" : ""}
-    >{isRecording ? "STOP RECORDING (R)" : "RECORD AUDIO (R)"}</button
-  >
-  <audio bind:this={audioEl} controls hidden={isAudioHidden} />
+  <RecordButton {mediaRecorder} />
+  <audio bind:this={audioEl} controls hidden={$isAudioHidden} />
 </div>
 <svelte:window on:keydown={onKeyDown} />
 
 <style>
-  .red {
-    background: #cb0000;
-  }
   #parent {
     width: 500px;
     height: 500px;
