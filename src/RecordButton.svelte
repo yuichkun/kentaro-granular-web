@@ -1,8 +1,21 @@
 <script lang="ts">
+  import type { Device } from "@rnbo/js";
   import type { IMediaRecorder } from "extendable-media-recorder";
-  import { isRecording, isAudioHidden } from "./stores";
+  import { onMount } from "svelte";
+  import { setupMediaRecorder } from "./mediaRecorder";
+  import { isRecording, isAudioHidden, audioUrl } from "./stores";
 
-  export let mediaRecorder: IMediaRecorder;
+  export let device: Device;
+  export let context: AudioContext;
+
+  let mediaRecorder: IMediaRecorder;
+  onMount(async () => {
+    const onStop = (blob: Blob) => {
+      const url = URL.createObjectURL(blob);
+      audioUrl.set(url);
+    };
+    mediaRecorder = await setupMediaRecorder({ context, device, onStop });
+  });
   const recordSound = () => {
     if (!$isRecording) {
       mediaRecorder.start();
