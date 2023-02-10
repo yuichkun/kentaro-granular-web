@@ -1,74 +1,37 @@
 <script lang="ts">
-  import {
-    MediaRecorder,
-    register,
-    type IMediaRecorder,
-  } from "extendable-media-recorder";
-  import { connect } from "extendable-media-recorder-wav-encoder";
+  import type { IMediaRecorder } from "extendable-media-recorder";
   import { draggable } from "@neodrag/svelte";
-  import { createDevice, type Device } from "@rnbo/js";
-  import { onMount } from "svelte";
-  onMount(async () => {
-    await register(await connect());
-  });
+  import type { Device } from "@rnbo/js";
+  import { context } from "./audioContext";
+  import { formatNumber, normalizePos } from "./utils";
+  import { setupDevice } from "./rnbo";
+  import { setupMediaRecorder } from "./mediaRecorder";
   let x: number = 50;
   let y: number = 50;
   let fileName: string = "Plaits_20200805_10.wav";
-  function normalizePos({ x, y }: { x: number; y: number }) {
-    return {
-      x: (x + 1) / 468,
-      y: 1 - (y + 1) / 468,
-    };
-  }
-  let WAContext = window.AudioContext || (window as any).webkitAudioContext;
-  let context = new WAContext();
   let device: Device | null = null;
   let mediaRecorder: IMediaRecorder;
   let audioEl: HTMLAudioElement;
+  let changeBuffer: (arrayBuf: ArrayBuffer) => Promise<void>;
   $: isStarted = device !== null;
 
   const onClick = async () => {
     await context.resume();
-    let rawPatcher = await fetch("patch.export.json");
-    let patcher = await rawPatcher.json();
-    const _device = await createDevice({ context, patcher });
-    _device.node.connect(context.destination);
+    const { device: _device, changeBuffer: _changeBuffer } = await setupDevice(
+      context
+    );
+    device = _device;
+    changeBuffer = _changeBuffer;
 
-    const dependencies = await (await fetch("dependencies.json")).json();
-
-    const results = await _device.loadDataBufferDependencies(dependencies);
-    const isSuccess = results.every((result) => result.type === "success");
-    if (isSuccess) {
-      device = _device;
-
-      const dest = context.createMediaStreamDestination();
-      device.node.connect(dest);
-
-      let chunks: BlobPart[] = [];
-      mediaRecorder = new MediaRecorder(dest.stream, { mimeType: "audio/wav" });
-      mediaRecorder.ondataavailable = (evt: any) => {
-        chunks.push(evt.data);
-      };
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "audio/wav" });
-        audioEl.src = URL.createObjectURL(blob);
-        chunks = [];
-      };
-    }
+    const onStop = (blob: Blob) => {
+      audioEl.src = URL.createObjectURL(blob);
+    };
+    mediaRecorder = await setupMediaRecorder({ context, device, onStop });
   };
   let fileInput: HTMLInputElement;
-  const changeBuffer = async (arrayBuf: ArrayBuffer, _fileName: string) => {
-    if (!device) return;
-    // Decode the received Data as an AudioBuffer
-    const audioBuf = await context.decodeAudioData(arrayBuf);
-    // Set the DataBuffer on the device
-    await device.setDataBuffer("buf_sample", audioBuf);
+  const changeFileName = async (_fileName: string) => {
     fileName = _fileName;
   };
-
-  function formatNumber(n: number) {
-    return (n * 100).toFixed(1);
-  }
 
   let isAudioHidden = true;
   let isRecording = false;
@@ -161,7 +124,9 @@
           if (!(e.target.result instanceof ArrayBuffer))
             throw new Error("failed to decode the file");
           if (!fileInput.files) return;
-          changeBuffer(e.target.result, fileName);
+          changeBuffer(e.target.result).then(() => {
+            changeFileName(fileName);
+          });
         };
         reader.readAsArrayBuffer(fileInput.files[0]);
       }}
