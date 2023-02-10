@@ -5,6 +5,8 @@
   import { onMount } from "svelte";
   import { setupMediaRecorder } from "./mediaRecorder";
   import type { RnboModule } from "./rnbo";
+  import SampleLoadButton from "./SampleLoadButton.svelte";
+  import type { ChangeBufferEventPayload } from "./types";
 
   export let rnboModule: RnboModule;
   export let context: AudioContext;
@@ -16,7 +18,6 @@
   $: startPlaying = rnboModule.startPlaying;
   $: stopPlaying = rnboModule.stopPlaying;
 
-  let fileInput: HTMLInputElement;
   let audioEl: HTMLAudioElement;
   let mediaRecorder: IMediaRecorder;
 
@@ -45,12 +46,16 @@
     }
   };
 
-  const changeFileName = async (_fileName: string) => {
-    fileName = _fileName;
+  const onChangeBuffer = ({
+    detail: { arrayBuffer, fileName },
+  }: CustomEvent<ChangeBufferEventPayload>) => {
+    changeBuffer(arrayBuffer).then(() => {
+      changeFileName(fileName);
+    });
   };
 
-  const loadSample = () => {
-    fileInput.click();
+  const changeFileName = async (_fileName: string) => {
+    fileName = _fileName;
   };
 
   type OnDrag = (e: CustomEvent<DragEventData>) => void;
@@ -66,27 +71,7 @@
     changePitch(y);
   };
 
-  const onFileChange = () => {
-    if (!(fileInput.files && fileInput.files.length === 1))
-      throw new Error("please select one audio file");
-    const reader = new FileReader();
-    const fileName = fileInput.files[0].name;
-    reader.onload = (e) => {
-      if (!e.target) throw new Error("something unexpected happened");
-      if (!(e.target.result instanceof ArrayBuffer))
-        throw new Error("failed to decode the file");
-      if (!fileInput.files) return;
-      changeBuffer(e.target.result).then(() => {
-        changeFileName(fileName);
-      });
-    };
-    reader.readAsArrayBuffer(fileInput.files[0]);
-  };
-
   function onKeyDown(e: KeyboardEvent) {
-    if (e.key === "l") {
-      loadSample();
-    }
     if (e.key === "r") {
       recordSound();
     }
@@ -120,15 +105,8 @@
     on:neodrag:end={stopPlaying}
   />
 </div>
-<input
-  type="file"
-  accept="audio/*"
-  style="display:none"
-  bind:this={fileInput}
-  on:change={onFileChange}
-/>
 <div class="controls">
-  <button id="load-button" on:click={loadSample}>LOAD YOUR SAMPLE (L)</button>
+  <SampleLoadButton on:changeBuffer={onChangeBuffer} />
   <button
     id="record-button"
     on:click={recordSound}
