@@ -41,6 +41,8 @@
       fileName: file.name,
     });
   };
+
+  let isDragging = false;
 </script>
 
 <pre>
@@ -51,11 +53,18 @@
 
 <div
   id="parent"
+  class={isDragging ? "dragging" : ""}
   on:dragover={(e) => {
     e.preventDefault();
+    isDragging = true;
+  }}
+  on:dragleave={(e) => {
+    e.preventDefault();
+    isDragging = false;
   }}
   on:drop={(e) => {
     e.preventDefault();
+    isDragging = false;
     if (e.dataTransfer?.files) {
       const [file] = e.dataTransfer.files;
       if (file.type.startsWith("audio")) {
@@ -66,6 +75,7 @@
     }
   }}
 >
+  <div id="description">Drag and drop your sample here</div>
   <div
     id="pointer"
     use:draggable={{
@@ -82,10 +92,19 @@
 </div>
 
 <style>
+  .dragging {
+    background: #818181;
+  }
   #parent {
     width: 500px;
     height: 500px;
     border: 1px white solid;
+  }
+  #description {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, 127%);
   }
   #pointer {
     width: 30px;
