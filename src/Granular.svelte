@@ -1,6 +1,6 @@
 <script lang="ts">
   import { formatNumber, normalizePos } from "./utils";
-  import { draggable } from "@neodrag/svelte";
+  import { draggable, type DragEventData } from "@neodrag/svelte";
   import type { IMediaRecorder } from "extendable-media-recorder";
   import { onMount } from "svelte";
   import { setupMediaRecorder } from "./mediaRecorder";
@@ -11,6 +11,10 @@
 
   $: device = rnboModule.device;
   $: changeBuffer = rnboModule.changeBuffer;
+  $: changePos = rnboModule.changePos;
+  $: changePitch = rnboModule.changePitch;
+  $: startPlaying = rnboModule.startPlaying;
+  $: stopPlaying = rnboModule.stopPlaying;
 
   let fileInput: HTMLInputElement;
   let audioEl: HTMLAudioElement;
@@ -45,9 +49,43 @@
     fileName = _fileName;
   };
 
+  const loadSample = () => {
+    fileInput.click();
+  };
+
+  type OnDrag = (e: CustomEvent<DragEventData>) => void;
+  const onDrag: OnDrag = (e) => {
+    const normalizedPos = normalizePos({
+      x: e.detail.offsetX,
+      y: e.detail.offsetY,
+    });
+    x = normalizedPos.x;
+    y = normalizedPos.y;
+
+    changePos(x);
+    changePitch(y);
+  };
+
+  const onFileChange = () => {
+    if (!(fileInput.files && fileInput.files.length === 1))
+      throw new Error("please select one audio file");
+    const reader = new FileReader();
+    const fileName = fileInput.files[0].name;
+    reader.onload = (e) => {
+      if (!e.target) throw new Error("something unexpected happened");
+      if (!(e.target.result instanceof ArrayBuffer))
+        throw new Error("failed to decode the file");
+      if (!fileInput.files) return;
+      changeBuffer(e.target.result).then(() => {
+        changeFileName(fileName);
+      });
+    };
+    reader.readAsArrayBuffer(fileInput.files[0]);
+  };
+
   function onKeyDown(e: KeyboardEvent) {
     if (e.key === "l") {
-      fileInput.click();
+      loadSample();
     }
     if (e.key === "r") {
       recordSound();
@@ -77,27 +115,9 @@
         y,
       },
     }}
-    on:neodrag:start={(e) => {
-      const play = device.parametersById.get("play");
-      play.value = 1;
-    }}
-    on:neodrag={(e) => {
-      const normalizedPos = normalizePos({
-        x: e.detail.offsetX,
-        y: e.detail.offsetY,
-      });
-      x = normalizedPos.x;
-      y = normalizedPos.y;
-
-      const pos = device.parametersById.get("pos");
-      const pitch = device.parametersById.get("pitch");
-      pos.value = x;
-      pitch.value = y;
-    }}
-    on:neodrag:end={(e) => {
-      const play = device.parametersById.get("play");
-      play.value = 0.0;
-    }}
+    on:neodrag:start={startPlaying}
+    on:neodrag={onDrag}
+    on:neodrag:end={stopPlaying}
   />
 </div>
 <input
@@ -105,27 +125,10 @@
   accept="audio/*"
   style="display:none"
   bind:this={fileInput}
-  on:change={() => {
-    if (!(fileInput.files && fileInput.files.length === 1))
-      throw new Error("please select one audio file");
-    const reader = new FileReader();
-    const fileName = fileInput.files[0].name;
-    reader.onload = (e) => {
-      if (!e.target) throw new Error("something unexpected happened");
-      if (!(e.target.result instanceof ArrayBuffer))
-        throw new Error("failed to decode the file");
-      if (!fileInput.files) return;
-      changeBuffer(e.target.result).then(() => {
-        changeFileName(fileName);
-      });
-    };
-    reader.readAsArrayBuffer(fileInput.files[0]);
-  }}
+  on:change={onFileChange}
 />
 <div class="controls">
-  <button id="load-button" on:click={() => fileInput.click()}
-    >LOAD YOUR SAMPLE (L)</button
-  >
+  <button id="load-button" on:click={loadSample}>LOAD YOUR SAMPLE (L)</button>
   <button
     id="record-button"
     on:click={recordSound}
