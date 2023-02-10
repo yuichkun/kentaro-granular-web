@@ -1,6 +1,11 @@
-import { createDevice } from "@rnbo/js";
+import { createDevice, type Device } from "@rnbo/js";
 
-export async function setupDevice(context: AudioContext) {
+export type RnboModule = {
+  device: Device;
+  changeBuffer: (arrayBuf: ArrayBuffer) => Promise<void>;
+};
+
+export async function setupDevice(context: AudioContext): Promise<RnboModule> {
   let rawPatcher = await fetch("patch.export.json");
   let patcher = await rawPatcher.json();
   const device = await createDevice({ context, patcher });
