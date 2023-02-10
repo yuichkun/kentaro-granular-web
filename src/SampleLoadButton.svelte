@@ -1,28 +1,23 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
+  import { readFileAsArrayBuffer } from "./fileReader";
   import type { ChangeBufferEventPayload } from "./types";
+
   const dispatch = createEventDispatcher<{
     changeBuffer: ChangeBufferEventPayload;
   }>();
 
   let fileInput: HTMLInputElement;
 
-  const onFileChange = () => {
+  const onFileChange = async () => {
     if (!(fileInput.files && fileInput.files.length === 1))
       throw new Error("please select one audio file");
-    const reader = new FileReader();
-    const fileName = fileInput.files[0].name;
-    reader.onload = (e) => {
-      if (!e.target) throw new Error("something unexpected happened");
-      if (!(e.target.result instanceof ArrayBuffer))
-        throw new Error("failed to decode the file");
-      if (!fileInput.files) return;
-      dispatch("changeBuffer", {
-        arrayBuffer: e.target.result,
-        fileName,
-      });
-    };
-    reader.readAsArrayBuffer(fileInput.files[0]);
+    const [file] = fileInput.files;
+    const arrayBuffer = await readFileAsArrayBuffer(file);
+    dispatch("changeBuffer", {
+      arrayBuffer,
+      fileName: file.name,
+    });
   };
 
   const loadSample = () => {
