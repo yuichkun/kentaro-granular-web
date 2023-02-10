@@ -27,7 +27,7 @@
   };
 </script>
 
-<XYPad {rnboModule} {fileName} />
+<XYPad {rnboModule} {fileName} on:changeBuffer={onChangeBuffer} />
 <div class="controls">
   <SampleLoadButton on:changeBuffer={onChangeBuffer} />
   <RecordButton {context} {device} />

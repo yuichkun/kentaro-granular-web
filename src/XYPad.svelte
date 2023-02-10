@@ -1,7 +1,14 @@
 <script lang="ts">
   import { draggable, type DragEventData } from "@neodrag/svelte";
+  import { createEventDispatcher } from "svelte";
+  import { readFileAsArrayBuffer } from "./fileReader";
   import type { RnboModule } from "./rnbo";
+  import type { ChangeBufferEventPayload } from "./types";
   import { formatNumber, normalizePos } from "./utils";
+
+  const dispatch = createEventDispatcher<{
+    changeBuffer: ChangeBufferEventPayload;
+  }>();
 
   export let rnboModule: RnboModule;
   export let fileName: string;
@@ -25,6 +32,15 @@
     changePos(x);
     changePitch(y);
   };
+
+  const onDrop = async (file: File) => {
+    console.log(file);
+    const arrayBuffer = await readFileAsArrayBuffer(file);
+    dispatch("changeBuffer", {
+      arrayBuffer,
+      fileName: file.name,
+    });
+  };
 </script>
 
 <pre>
@@ -33,7 +49,23 @@
     Pitch(y): {formatNumber(y)}%
 </pre>
 
-<div id="parent">
+<div
+  id="parent"
+  on:dragover={(e) => {
+    e.preventDefault();
+  }}
+  on:drop={(e) => {
+    e.preventDefault();
+    if (e.dataTransfer?.files) {
+      const [file] = e.dataTransfer.files;
+      if (file.type.startsWith("audio")) {
+        onDrop(file);
+      } else {
+        alert("Select an audio file");
+      }
+    }
+  }}
+>
   <div
     id="pointer"
     use:draggable={{
