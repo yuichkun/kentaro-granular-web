@@ -1,14 +1,15 @@
 <script lang="ts">
-  import { formatNumber, normalizePos } from "./utils";
   import { draggable, type DragEventData } from "@neodrag/svelte";
   import type { IMediaRecorder } from "extendable-media-recorder";
   import { onMount } from "svelte";
   import { setupMediaRecorder } from "./mediaRecorder";
+  import Player from "./Player.svelte";
+  import RecordButton from "./RecordButton.svelte";
   import type { RnboModule } from "./rnbo";
   import SampleLoadButton from "./SampleLoadButton.svelte";
+  import { audioUrl } from "./stores";
   import type { ChangeBufferEventPayload } from "./types";
-  import RecordButton from "./RecordButton.svelte";
-  import { isAudioHidden, isRecording } from "./stores";
+  import { formatNumber, normalizePos } from "./utils";
 
   export let rnboModule: RnboModule;
   export let context: AudioContext;
@@ -20,7 +21,6 @@
   $: startPlaying = rnboModule.startPlaying;
   $: stopPlaying = rnboModule.stopPlaying;
 
-  let audioEl: HTMLAudioElement;
   let mediaRecorder: IMediaRecorder;
 
   let fileName: string = "Plaits_20200805_10.wav";
@@ -29,7 +29,8 @@
 
   onMount(async () => {
     const onStop = (blob: Blob) => {
-      audioEl.src = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob);
+      audioUrl.set(url);
     };
     mediaRecorder = await setupMediaRecorder({ context, device, onStop });
   });
@@ -58,16 +59,6 @@
     changePos(x);
     changePitch(y);
   };
-
-  function onKeyDown(e: KeyboardEvent) {
-    if (e.code === "Space" && !$isRecording) {
-      if (audioEl.paused) {
-        audioEl.play();
-      } else {
-        audioEl.pause();
-      }
-    }
-  }
 </script>
 
 <pre>
@@ -93,9 +84,8 @@
 <div class="controls">
   <SampleLoadButton on:changeBuffer={onChangeBuffer} />
   <RecordButton {mediaRecorder} />
-  <audio bind:this={audioEl} controls hidden={$isAudioHidden} />
+  <Player />
 </div>
-<svelte:window on:keydown={onKeyDown} />
 
 <style>
   #parent {
