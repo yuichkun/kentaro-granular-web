@@ -46,12 +46,11 @@
 </script>
 
 <div id="dragarea">
-  <div>Drag and drop your sample here</div>
-  <div>
-    File: {fileName}
+  <div>drag and drop your sample here</div>
+  <div id="file-name">
+    file: {fileName}
   </div>
 </div>
-<pre />
 
 <div
   id="parent"
@@ -96,11 +95,18 @@
 <style>
   #dragarea {
     background: transparent;
-    border: 1px rgb(246, 249, 228) solid;
-    width: 500px;
+    border: 1.5px rgb(246, 249, 228) solid;
+    width: 350px;
     height: 55px;
     padding: 8px 0;
     text-align: center;
+    margin: 0 auto;
+    margin-bottom: 18px;
+  }
+
+  #file-name {
+    padding-top: 2px;
+    color: rgb(160, 160, 160);
   }
   .dragging {
     background: #818181;
@@ -121,7 +127,7 @@
   #pointer {
     width: 45px;
     height: 45px;
-    border: 4px solid rgb(246, 249, 228);
+    border: 3px solid rgb(246, 249, 228);
     border-radius: 50%;
     cursor: pointer;
   }
