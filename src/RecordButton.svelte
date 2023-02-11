@@ -44,8 +44,11 @@
 <style>
   #record-button {
     width: 164px;
+    background: transparent;
+    border: 1px solid rgb(246, 249, 228);
+    border-radius: 32px;
   }
   .red {
-    background: #cb0000;
+    background: #cb0000 !important;
   }
 </style>
