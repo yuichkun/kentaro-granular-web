@@ -13,10 +13,10 @@
 </script>
 
 <main>
-  <h1>Kentaro Granular Web</h1>
   {#if isStarted}
     <Granular {rnboModule} {context} />
   {:else}
+    <h1>Kentaro Granular Web</h1>
     <button style="margin-top:32px;" on:click={onClick}>PLAY</button>
   {/if}
 </main>
