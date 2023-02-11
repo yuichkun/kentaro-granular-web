@@ -37,12 +37,14 @@
 <button
   id="record-button"
   on:click={recordSound}
-  class={$isRecording ? "red" : ""}
-  >{$isRecording ? "STOP RECORDING (R)" : "RECORD AUDIO (R)"}</button
+  class={$isRecording ? "red" : ""}>RECORD OUTPUT</button
 >
 <svelte:window on:keydown={onKeyDown} />
 
 <style>
+  #record-button {
+    width: 164px;
+  }
   .red {
     background: #cb0000;
   }
