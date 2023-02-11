@@ -45,7 +45,7 @@
         if (v === 1) {
           canvasCtx.strokeStyle = "rgb(0, 0, 0, 0)";
         } else {
-          canvasCtx.strokeStyle = "rgb(255, 255, 255)";
+          canvasCtx.strokeStyle = "rgb(20,20,20, 0.75)";
         }
         const y = v * (HEIGHT / 2);
         if (i === 0) {
