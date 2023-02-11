@@ -15,3 +15,9 @@
 
 <audio bind:this={audioEl} controls hidden={$isAudioHidden} src={$audioUrl} />
 <svelte:window on:keydown={onKeyDown} />
+
+<style>
+  audio {
+    padding-top: 6px;
+  }
+</style>
