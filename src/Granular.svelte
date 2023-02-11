@@ -2,7 +2,6 @@
   import Player from "./Player.svelte";
   import RecordButton from "./RecordButton.svelte";
   import type { RnboModule } from "./rnbo";
-  import SampleLoadButton from "./SampleLoadButton.svelte";
   import XYPad from "./XYPad.svelte";
   import type { ChangeBufferEventPayload } from "./types";
   import { onMount } from "svelte";
@@ -81,7 +80,6 @@
 <canvas width={WIDTH} height={HEIGHT} bind:this={canvas} />
 <XYPad {rnboModule} {fileName} on:changeBuffer={onChangeBuffer} />
 <div class="controls">
-  <SampleLoadButton on:changeBuffer={onChangeBuffer} />
   <RecordButton {context} {device} />
   <Player />
 </div>
