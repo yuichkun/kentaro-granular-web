@@ -115,7 +115,7 @@
     width: 500px;
     height: 500px;
     border-radius: 2%;
-    background: #333333;
+    background: rgb(33, 33, 33);
     margin: 0 auto;
   }
   #description {
