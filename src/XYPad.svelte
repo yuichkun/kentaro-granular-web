@@ -45,11 +45,13 @@
   let isDragging = false;
 </script>
 
-<pre>
+<div id="dragarea">
+  <div>Drag and drop your sample here</div>
+  <div>
     File: {fileName}
-    Position(x): {formatNumber(x)}%
-    Pitch(y): {formatNumber(y)}%
-</pre>
+  </div>
+</div>
+<pre />
 
 <div
   id="parent"
@@ -75,7 +77,6 @@
     }
   }}
 >
-  <div id="description">Drag and drop your sample here</div>
   <div
     id="pointer"
     use:draggable={{
@@ -92,6 +93,14 @@
 </div>
 
 <style>
+  #dragarea {
+    background: transparent;
+    border: 1px white solid;
+    width: 500px;
+    height: 55px;
+    padding: 8px 0;
+    text-align: center;
+  }
   .dragging {
     background: #818181;
   }
