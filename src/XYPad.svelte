@@ -85,6 +85,7 @@
         x,
         y,
       },
+      defaultClassDragging: "dragging",
     }}
     on:neodrag:start={startPlaying}
     on:neodrag={onDrag}
@@ -95,7 +96,7 @@
 <style>
   #dragarea {
     background: transparent;
-    border: 1px white solid;
+    border: 1px rgb(246, 249, 228) solid;
     width: 500px;
     height: 55px;
     padding: 8px 0;
@@ -107,7 +108,8 @@
   #parent {
     width: 500px;
     height: 500px;
-    border: 1px white solid;
+    border-radius: 2%;
+    background: #333333;
     margin: 0 auto;
   }
   #description {
@@ -117,12 +119,17 @@
     /* transform: translate(-50%, 127%); */
   }
   #pointer {
-    width: 30px;
-    height: 30px;
-    background: white;
-    border: 2px rgb(193, 193, 193) solid;
+    width: 45px;
+    height: 45px;
+    border: 4px solid rgb(246, 249, 228);
     border-radius: 50%;
     cursor: pointer;
-    filter: blur(2px) brightness(200%);
+  }
+  .dragging {
+    width: 45px;
+    height: 45px;
+    background: rgb(246, 249, 228);
+    border-radius: 50%;
+    cursor: pointer;
   }
 </style>
