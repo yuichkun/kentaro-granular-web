@@ -136,6 +136,6 @@
     height: 45px;
     background: rgb(246, 249, 228);
     border-radius: 50%;
-    cursor: pointer;
+    cursor: none !important;
   }
 </style>
