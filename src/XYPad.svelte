@@ -26,9 +26,10 @@
   $: {
     if (parentDiv) {
       const amount = 3;
-      const transform = `perspective(550px) rotateY(${
-        (y / 500) * amount * 2 - amount
-      }deg) rotateX(${(x / 500) * amount * 2 - amount}deg)`;
+      const yDeg = (1 - ((x / 500) * amount) / amount) * amount * 2 - amount;
+      const xDeg = (1 - ((y / 500) * amount) / amount) * amount * 2 - amount;
+
+      const transform = `perspective(550px) rotateY(${yDeg}deg) rotateX(${xDeg}deg)`;
       parentDiv.style.transform = transform;
     }
   }
