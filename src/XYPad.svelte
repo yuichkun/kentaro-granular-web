@@ -157,6 +157,9 @@
   #file-name {
     padding-top: 2px;
     color: rgb(160, 160, 160);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   #parent {
     width: 500px;
