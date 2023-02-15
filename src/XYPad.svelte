@@ -45,15 +45,8 @@
   let isDragging = false;
 </script>
 
-<div id="dragarea">
-  <div>drag and drop your sample here</div>
-  <div id="file-name">
-    file: {fileName}
-  </div>
-</div>
-
 <div
-  id="parent"
+  id="dragarea"
   class={isDragging ? "dragging" : ""}
   on:dragover={(e) => {
     e.preventDefault();
@@ -76,6 +69,13 @@
     }
   }}
 >
+  <div>drag and drop your sample here</div>
+  <div id="file-name">
+    file: {fileName}
+  </div>
+</div>
+
+<div id="parent">
   <div
     id="pointer"
     use:draggable={{
@@ -132,10 +132,8 @@
     cursor: pointer;
   }
   .dragging {
-    width: 45px;
-    height: 45px;
-    background: rgb(246, 249, 228);
-    border-radius: 50%;
+    color: rgb(33, 33, 33) !important;
+    background: rgb(246, 249, 228) !important;
     cursor: none !important;
   }
 </style>
