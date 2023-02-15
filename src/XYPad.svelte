@@ -4,7 +4,7 @@
   import { readFileAsArrayBuffer } from "./fileReader";
   import type { RnboModule } from "./rnbo";
   import type { ChangeBufferEventPayload } from "./types";
-  import { formatNumber, normalizePos } from "./utils";
+  import { normalizePos } from "./utils";
 
   const dispatch = createEventDispatcher<{
     changeBuffer: ChangeBufferEventPayload;
@@ -17,20 +17,24 @@
   $: startPlaying = rnboModule.startPlaying;
   $: stopPlaying = rnboModule.stopPlaying;
 
-  let x: number = 50;
-  let y: number = 50;
+  let pos: number = 50;
+  let pitch: number = 50;
+  let x: number = 0;
+  let y: number = 0;
+  let parentDiv: HTMLDivElement;
 
-  type OnDrag = (e: CustomEvent<DragEventData>) => void;
-  const onDrag: OnDrag = (e) => {
+  const onMouseMove = (e: any) => {
+    if (!isPointerMoving) return;
+    updatePointerPosition(e);
     const normalizedPos = normalizePos({
-      x: e.detail.offsetX,
-      y: e.detail.offsetY,
+      x,
+      y,
     });
-    x = normalizedPos.x;
-    y = normalizedPos.y;
+    pos = normalizedPos.x;
+    pitch = normalizedPos.y;
 
-    changePos(x);
-    changePitch(y);
+    changePos(pos);
+    changePitch(pitch);
   };
 
   const onDrop = async (file: File) => {
@@ -43,6 +47,26 @@
   };
 
   let isDragging = false;
+  let isPointerMoving = false;
+  function updatePointerPosition(e: any) {
+    const posX = e.pageX - parentDiv.offsetLeft - 23;
+    if (posX + 46 > 500) {
+      x = 500 - 46;
+    } else if (posX <= 0) {
+      x = 0;
+    } else {
+      x = posX;
+    }
+
+    const posY = e.pageY - parentDiv.offsetTop - 23;
+    if (posY + 46 > 500) {
+      y = 500 - 46;
+    } else if (posY <= 0) {
+      y = 0;
+    } else {
+      y = posY;
+    }
+  }
 </script>
 
 <div
@@ -75,22 +99,38 @@
   </div>
 </div>
 
-<div id="parent">
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-mouse-events-have-key-events -->
+<div
+  id="parent"
+  bind:this={parentDiv}
+  on:mousedown={(e) => {
+    e.preventDefault();
+    isPointerMoving = true;
+    startPlaying();
+  }}
+  on:click={updatePointerPosition}
+>
   <div
     id="pointer"
+    class={isPointerMoving ? "dragging" : ""}
     use:draggable={{
+      disabled: true,
       bounds: "parent",
-      defaultPosition: {
+      position: {
         x,
         y,
       },
-      defaultClassDragging: "dragging",
     }}
-    on:neodrag:start={startPlaying}
-    on:neodrag={onDrag}
-    on:neodrag:end={stopPlaying}
   />
 </div>
+<svelte:window
+  on:mousemove={onMouseMove}
+  on:mouseup={(e) => {
+    isPointerMoving = false;
+    stopPlaying();
+  }}
+/>
 
 <style>
   #dragarea {
@@ -108,28 +148,19 @@
     padding-top: 2px;
     color: rgb(160, 160, 160);
   }
-  .dragging {
-    background: #818181;
-  }
   #parent {
     width: 500px;
     height: 500px;
     border-radius: 2%;
     background: rgb(33, 33, 33);
     margin: 0 auto;
-  }
-  #description {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    /* transform: translate(-50%, 127%); */
+    cursor: pointer;
   }
   #pointer {
-    width: 45px;
-    height: 45px;
+    width: 46px;
+    height: 46px;
     border: 3px solid rgb(246, 249, 228);
     border-radius: 50%;
-    cursor: pointer;
   }
   .dragging {
     color: rgb(33, 33, 33) !important;
