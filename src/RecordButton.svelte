@@ -41,7 +41,6 @@
       canvasCtx.beginPath();
       const sliceWidth = WIDTH / bufferLength;
       let x = 0;
-      console.log(dataArray);
       for (let i = 0; i < bufferLength; i++) {
         const v = dataArray[i] / 128.0;
         if (v === 1) {
