@@ -23,6 +23,16 @@
   let y: number = 0;
   let parentDiv: HTMLDivElement;
 
+  $: {
+    if (parentDiv) {
+      const amount = 3;
+      const transform = `perspective(550px) rotateY(${
+        (y / 500) * amount * 2 - amount
+      }deg) rotateX(${(x / 500) * amount * 2 - amount}deg)`;
+      parentDiv.style.transform = transform;
+    }
+  }
+
   const onMouseMove = (e: any) => {
     if (!isPointerMoving) return;
     updatePointerPosition(e);
